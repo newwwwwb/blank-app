@@ -1,15 +1,25 @@
 import streamlit as st
-import time
+from streamlit_folium import folium_static
+import folium
+from folium.plugins import MarkerCluster
+import pandas as pd
 
-st.title("2025-05-26")
+st.title("진주시 CCTV 현황")
 
-st.write("진행 중입니다...")
+df = pd.read_csv("/workspaces/blank-app/경상남도 진주시_CCTV위치정보_20250501.csv", encoding='euc-kr')
 
-progress = st.progress(0)
+st.dataframe(df, height=200)
 
-for i in range(101):
-    time.sleep(0.03)  # 작업 시뮬레이션
-    progress.progress(i)
+df[["lat","lon"]] = df[["위도","경도"]]
 
-st.success("완료되었습니다!")
+m = folium.Map(location=[35.1799817, 128.1076213], zoom_start=13)
 
+marker_cluster = MarkerCluster().add_to(m)
+
+for idx, row in df.iterrows():
+    folium.Marker(
+        location=[row["lat"], row["lon"]],
+        popup=row["설치장소"],
+    ).add_to(marker_cluster)
+
+folium_static(m)
